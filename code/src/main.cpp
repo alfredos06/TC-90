@@ -10,6 +10,7 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
+  analogWrite(11, 20);
 }
 
 // put function definitions here:
