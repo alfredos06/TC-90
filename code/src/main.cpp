@@ -14,71 +14,42 @@ bool beenHere;
 
 float rpm;
 
-// volatile byte fast = LOW;
-
-
-
-
-  //NOTE: Use another timer which is creates the 70Hz dither which then trigers fast PWM.
-
-
-
 
 ISR(TIMER1_COMPA_vect) {
 
   OCR1A += 111;
 
-
-  //digitalWrite(3, !digitalRead(3));
-
   if (beenHere) {
     OCR2A = 50;
-    OCR2B = 40;
-
-    //digitalWrite(3, LOW);
+    OCR2B = 50;
 
     beenHere = false;
 
-    //Serial.println("LOW");
   }
-  else {
-    OCR2A = 0;
-    OCR2B = 0;
 
-    //digitalWrite(3, LOW);
+  
+  else {
+    OCR2A = 255;
+    OCR2B = 0;
 
     beenHere = true;
 
-    //Serial.println("HIGH");
-
   }
+  
 
 }
 
-/*
 
-ISR(TIMER1_COMPB_vect) {
-
-  OCR1A += 333;
-
-  OCR2A = 0;
-  OCR2B = 0;
-
-  //digitalWrite(3, LOW);
-}
-
-*/
 
 void setup() {
 
   Serial.begin(9600);
 
   pinMode(3, OUTPUT);   //Drive signal
-  pinMode(10, OUTPUT);  //Dither
+  
 
   pinMode(12, INPUT);
 
-  //attachInterrupt(digitalPinToInterrupt(3), fast, CHANGE);
 
 
   /*
