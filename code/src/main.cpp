@@ -1,7 +1,5 @@
 #include <Arduino.h>
 
-int dutyCycle = 0;
-
 int pulseHigh;
 
 int pulseLow;
@@ -9,6 +7,8 @@ int pulseLow;
 float freq;
 
 int pulsePin = 12;
+
+int val1 = 0;
 
 bool beenHere;
 
@@ -20,26 +20,33 @@ ISR(TIMER1_COMPA_vect) {
   OCR1A += 111;
 
   if (beenHere) {
-    OCR2A = 50;
-    OCR2B = 50;
+
+    TCCR2A = B00100011;
+    TCCR2B = B00001100;
+
+    int val2 = ((val1 / 100) * 200);
+
+    OCR2A = 200;
+    OCR2B = val2;
 
     beenHere = false;
-
   }
 
-  
   else {
+
+    /*
+    For two different PWM signals
+
     OCR2A = 255;
-    OCR2B = 0;
+    OCR2B = 1;
+    */
+
+    TCCR2A = 0;
+    TCCR2B = 0;
 
     beenHere = true;
-
   }
-  
-
 }
-
-
 
 void setup() {
 
@@ -51,30 +58,21 @@ void setup() {
   pinMode(12, INPUT);
 
 
-
-  /*
-  TCCR1A = B10100011;
-  TCCR1B = B00010101;
-
-
-  OCR1A = 222; //FREQ
-  OCR1B = 22; //Duty-Cycle
-  */
-
-
-  TCCR2A = B00100011;
-  TCCR2B = B00001110;
+  TCCR2A = B00100011;   //Clear OC2B on compare match, set OC2B at BOTTOM
+  TCCR2B = B00001100;   //Prescaler = 64, Fast PWM (Mode 7, se datasheet)
 
   TCCR1A = 0;           // Init Timer1A
   TCCR1B = 0;           // Init Timer1B
-  TCCR1B |= B00000101;  // Prescaler = 1024
+  TCCR1B = B00000101;  // Prescaler = 1024
   OCR1A = 111;        // Timer Compare1A Register
   //OCR1B = 333;
-  TIMSK1 |= B00000010;  // Enable Timer COMPA Interrupt
+  TIMSK1 = B00000010;  // Enable Timer COMPA Interrupt
 
 }
 
 void loop() {
+
+  /*
 
   pulseHigh = pulseIn(pulsePin, HIGH);
   pulseLow = pulseIn(pulsePin, LOW);
@@ -86,10 +84,12 @@ void loop() {
   Serial.print(" : ");
   Serial.print(rpm);
   Serial.println();
+  */
 
-
-  
+  val1 = 100;
 
 
 }
+
+
 
