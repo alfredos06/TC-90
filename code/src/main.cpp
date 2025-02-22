@@ -1,8 +1,20 @@
 #include <Arduino.h>
 
+const int toothCount = 174;
+
+const int minRPM = 600;
+
+const int maxRPM = 2200;
+
+const int minPWR = 0;
+
+const int maxPWR = 100;
+
 int pulseHigh;
 
 int pulseLow;
+
+int dutyCycleRatio;
 
 float freq;
 
@@ -14,6 +26,10 @@ bool beenHere;
 
 float rpm;
 
+int pwr = 0;
+
+unsigned long previousMillis = 0;
+
 
 ISR(TIMER1_COMPA_vect) {
 
@@ -24,10 +40,8 @@ ISR(TIMER1_COMPA_vect) {
     TCCR2A = B00100011;
     TCCR2B = B00001100;
 
-    int val2 = ((val1 / 100) * 200);
-
     OCR2A = 200;
-    OCR2B = val2;
+    OCR2B = dutyCycleRatio;
 
     beenHere = false;
   }
@@ -46,6 +60,54 @@ ISR(TIMER1_COMPA_vect) {
 
     beenHere = true;
   }
+}
+
+int controlCurve(int rpm, int dragVarv, long accelerationTime)  {
+
+  unsigned long currentMillis = millis();
+
+  //TODO: make an actual accelerationTime
+  unsigned long interval = 10;
+
+  int pwrTarget;
+
+  if (rpm >= dragVarv) {
+  
+    pwrTarget = map(rpm, dragVarv, maxRPM, minPWR, maxPWR);
+
+  }
+  else {
+    pwrTarget = 0;
+  }
+
+  if (currentMillis - previousMillis >= interval) {
+
+    previousMillis = currentMillis;
+
+    if (pwr < pwrTarget) {
+      pwr++;
+    }
+    else if (pwr > pwrTarget) {
+      pwr--;
+    }
+  }
+
+  return pwr;
+
+}
+
+int getRpm() {  //Fetches the engine RPM on pin 12
+
+  float rpm; 
+
+  pulseHigh = pulseIn(pulsePin, HIGH);
+  pulseLow = pulseIn(pulsePin, LOW);
+  freq = 1000000/(pulseHigh + pulseLow);
+
+  rpm = (freq * 60) / toothCount;
+
+  return rpm;
+ 
 }
 
 void setup() {
@@ -72,21 +134,15 @@ void setup() {
 
 void loop() {
 
-  /*
+  rpm = getRpm();
 
-  pulseHigh = pulseIn(pulsePin, HIGH);
-  pulseLow = pulseIn(pulsePin, LOW);
-  freq = 1000000/(pulseHigh + pulseLow);
+  dutyCycleRatio = controlCurve(rpm, 1000, 1000);
 
-  rpm = (freq * 60)/174;
-
-  Serial.print(freq);
-  Serial.print(" : ");
+  Serial.print(" RPM: "); 
   Serial.print(rpm);
+  Serial.print( " Power: ");
+  Serial.print(dutyCycleRatio);
   Serial.println();
-  */
-
-  val1 = 100;
 
 
 }
