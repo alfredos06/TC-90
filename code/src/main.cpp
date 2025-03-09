@@ -136,13 +136,22 @@ void loop() {
 
   rpm = getRpm();
 
-  dutyCycleRatio = controlCurve(rpm, 1000, 1000);
+  if (rpm > maxRPM) {
 
-  Serial.print(" RPM: "); 
-  Serial.print(rpm);
-  Serial.print( " Power: ");
-  Serial.print(dutyCycleRatio);
-  Serial.println();
+    Serial.println("OVERPRM");
+
+  }
+  else {
+
+    dutyCycleRatio = controlCurve(rpm, 1000, 1000);
+
+    Serial.print(" RPM: "); 
+    Serial.print(rpm);
+    Serial.print( " Power: ");
+    Serial.print(dutyCycleRatio);
+    Serial.println();
+
+  }
 
 
 }
